@@ -107,13 +107,25 @@ class SMTPMailer(BaseMailer):
             # We failed silently on open(), trying to send would be pointless.
             return
         num_sent = 0
+        results = []
         for message in email_messages:
-            sent = self._send(message)
-            if sent:
-                num_sent += 1
+            try:
+                sent = self._send(message)
+                _r = {'status': 'sent'}
+                if sent:
+                    num_sent += 1
+            except Exception as e:
+                _r = {'status': 'failed', 'extras': str(e)}
+
+            if message.kwargs:
+                # Update the kwargs if any
+                _r.update(message.kwargs)
+
+            results.append(_r)
+
         if new_conn_created:
             self.close()
-        return num_sent
+        return num_sent, results
 
     def _send(self, message):
         """A helper method that does the actual sending.
@@ -138,8 +150,8 @@ class SMTPMailer(BaseMailer):
                     self.connection = None
                     self.open()
                     self.connection.sendmail(from_email, group, message.as_bytes())
-        except:
+        except Exception as e:
             if not self.fail_silently:
-                raise
+                raise e
             return False
         return True

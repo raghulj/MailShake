@@ -108,7 +108,7 @@ class EmailMessage(object):
                  cc=None, bcc=None, reply_to=None,
                  html=None, attachments=None, headers=None,
                  text_content=None, html_content=None,
-                 encoding='utf-8', tags=None):
+                 encoding='utf-8', tags=None, kwargs=None):
         """Initialize a single email message (which can be sent to multiple
         recipients).
 
@@ -120,6 +120,9 @@ class EmailMessage(object):
         compatibility. Use `text` and `html` instead.
 
         `tags` are ignored unless the mailer supports them (eg. Amazon SES)
+
+        `kwargs` are used to pass extra params to EmailMessage. This can be useful
+        for identifying email messages with identifiers
         """
         self.encoding = encoding
         to = to or []
@@ -165,6 +168,7 @@ class EmailMessage(object):
         self.text = text
         self.html = html
         self.tags = tags
+        self.kwargs = kwargs
 
     def render(self):
         msg = self._create_message()
